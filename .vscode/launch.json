@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "DEV",
+      "request": "launch",
+      "mainClass": "com.auvexis.vanguard.VanguardApplication",
+      "vmArgs": "-Dspring.profiles.active=dev",
+      "preLaunchTask": "maven-compile",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      }
+    },
+    {
+      "type": "java",
+      "name": "PROD",
+      "request": "launch",
+      "mainClass": "com.auvexis.vanguard.VanguardApplication",
+      "vmArgs": "-Dspring.profiles.active=prod",
+      "preLaunchTask": "maven-compile",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "prod"
+      }
+    }
+  ]
+}
