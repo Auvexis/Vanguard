@@ -7,6 +7,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.auvexis.vanguard.shared.events.UserEmailVerificationEvent;
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
 
 /**
  * Asynchronous consumer for authentication-related email events.
@@ -19,13 +22,10 @@ public class AuthEmailService {
     @Value("${vanguard.client.url}")
     private String clientUrl;
 
-    @Value("${vanguard.smtp.username}")
-    private String smtpFrom;
+    private final Resend resend;
 
-    private final JavaMailSender mailSender;
-
-    public AuthEmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public AuthEmailService(Resend resend) {
+        this.resend = resend;
     }
 
     /**
@@ -41,13 +41,18 @@ public class AuthEmailService {
                 "&email_token=" + event.token() +
                 "\n\nIf you did not create this account, please ignore this email.";
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(smtpFrom);
-        message.setTo(event.email());
-        message.setSubject(subject);
-        message.setText(body);
+        CreateEmailOptions params = CreateEmailOptions.builder()
+                .from("vanguard@auvexis.com")
+                .to(event.email())
+                .subject(subject)
+                .html(body)
+                .build();
 
-        mailSender.send(message);
+        try {
+            resend.emails().send(params);
+        } catch (ResendException e) {
+            throw new RuntimeException("Failed to send verification email", e);
+        }
     }
 
     @RabbitListener(queues = AuthQueues.USER_EMAIL_VERIFICATION_RESEND_QUEUE)
@@ -59,13 +64,18 @@ public class AuthEmailService {
                 "&email_token=" + event.token() +
                 "\n\nIf you did not request this email, please ignore this email.";
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(smtpFrom);
-        message.setTo(event.email());
-        message.setSubject(subject);
-        message.setText(body);
+        CreateEmailOptions params = CreateEmailOptions.builder()
+                .from("vanguard@auvexis.com")
+                .to(event.email())
+                .subject(subject)
+                .html(body)
+                .build();
 
-        mailSender.send(message);
+        try {
+            resend.emails().send(params);
+        } catch (ResendException e) {
+            throw new RuntimeException("Failed to send verification email", e);
+        }
     }
 
 }
