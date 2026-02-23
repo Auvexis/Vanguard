@@ -1,4 +1,4 @@
-# Vanguard
+<h1 align="center">Auvexis Vanguard</h1>
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen)](https://spring.io/projects/spring-boot)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-blue)](https://www.docker.com/)
