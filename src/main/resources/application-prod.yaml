@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${VANGUARD_DB_HOST}/${VANGUARD_DB_NAME}?${VANGUARD_DB_USER}&${VANGUARD_DB_PASSWORD}&sslmode=require&channelBinding=require
+    url: ${VANGUARD_DB_URL}
     driver-class-name: org.postgresql.Driver
 
   cache:
@@ -8,12 +8,10 @@ spring:
 
   data:
     redis:
-      host: ${VANGUARD_REDIS_HOST}
-      port: ${VANGUARD_REDIS_PORT}
+      url: ${VANGUARD_REDIS_URL}
 
   rabbitmq:
-    host: ${VANGUARD_RABBITMQ_HOST:rabbitmq}
-    port: ${VANGUARD_RABBITMQ_PORT:5672}
+    addresses: ${VANGUARD_RABBITMQ_URL}
 
 auth:
   jwt:
