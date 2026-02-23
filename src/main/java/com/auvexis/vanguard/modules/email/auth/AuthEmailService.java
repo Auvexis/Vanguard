@@ -2,8 +2,6 @@ package com.auvexis.vanguard.modules.email.auth;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.auvexis.vanguard.shared.events.UserEmailVerificationEvent;
