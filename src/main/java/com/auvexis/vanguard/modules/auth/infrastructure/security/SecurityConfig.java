@@ -104,12 +104,8 @@ public class SecurityConfig {
         configuration
                 .setAllowedOrigins(
                         Arrays.asList(
-                                "https://auvexis-vanguard.vercel.app",
-                                "http://auvexis-vanguard.vercel.app",
-                                "https://vanguard.auvexis.com",
-                                "http://vanguard.auvexis.com",
                                 "https://auvexis.com",
-                                "http://auvexis.com",
+                                "https://vanguard.auvexis.com",
                                 "http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
