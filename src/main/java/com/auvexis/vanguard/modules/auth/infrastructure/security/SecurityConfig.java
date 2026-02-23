@@ -103,8 +103,8 @@ public class SecurityConfig {
         /**
          * Allow the configured client URL and localhost:3000 as a fallback/dev default
          */
-        configuration.setAllowedOrigins(Arrays.asList(clientUrl, "http://localhost:3000", "https://vanguard.auvexis.com", "vanguard.auvexis.com"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
