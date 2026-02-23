@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${VANGUARD_DB_HOST}:${VANGUARD_DB_PORT}/${VANGUARD_DB_NAME}
+    driver-class-name: org.postgresql.Driver
+    username: ${VANGUARD_DB_USERNAME}
+    password: ${VANGUARD_DB_PASSWORD}
+
+  cache:
+    type: redis
+
+  data:
+    redis:
+      host: ${VANGUARD_REDIS_HOST}
+      port: ${VANGUARD_REDIS_PORT}
+
+  rabbitmq:
+    host: ${VANGUARD_RABBITMQ_HOST:rabbitmq}
+    port: ${VANGUARD_RABBITMQ_PORT:5672}
+
+auth:
+  jwt:
+    secret: ${VANGUARD_JWT_SECRET}
+    expiration-ms: ${VANGUARD_JWT_EXPIRATION_MS}
+    refresh-expiration-ms: ${VANGUARD_JWT_REFRESH_EXPIRATION_MS}

@@ -17,6 +17,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * Persistent entity representing a system user.
+ * Stores core identity information, security credentials, and account status
+ * flags.
+ * Utilizes JPA auditing for automated timestamp management.
+ */
 @Entity
 @Table(name = "users", schema = "auth")
 @EntityListeners(AuditingEntityListener.class)
@@ -43,7 +49,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "system_role", nullable = false)
-    private SystemRole systemRole = SystemRole.NONE;
+    private SystemRole systemRole = SystemRole.USER;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreatedDate
@@ -62,7 +68,7 @@ public class User {
         this.password = password;
         this.accountActive = true;
         this.emailVerified = false;
-        this.systemRole = SystemRole.NONE;
+        this.systemRole = SystemRole.USER;
     }
 
     public UUID getId() {

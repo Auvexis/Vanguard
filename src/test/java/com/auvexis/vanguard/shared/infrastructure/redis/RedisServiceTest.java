@@ -1,4 +1,4 @@
-package com.auvexis.vanguard.shared.modules.redis;
+package com.auvexis.vanguard.shared.infrastructure.redis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;

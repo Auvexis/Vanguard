@@ -1,4 +1,4 @@
-package com.auvexis.vanguard.modules.auth.application;
+package com.auvexis.vanguard.shared.infrastructure.jwt;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -18,8 +18,15 @@ import com.auvexis.vanguard.modules.auth.application.exception.RefreshTokenExpir
 import com.auvexis.vanguard.modules.auth.domain.RefreshToken;
 import com.auvexis.vanguard.modules.auth.domain.User;
 import com.auvexis.vanguard.modules.auth.infrastructure.repository.RefreshTokenRepository;
-import com.auvexis.vanguard.shared.modules.redis.RedisService;
+import com.auvexis.vanguard.shared.infrastructure.redis.RedisService;
 
+/**
+ * Service responsible for JWT (JSON Web Token) lifecycle management.
+ * Handles access token generation, refresh token persistence, and token
+ * blacklisting using Redis.
+ * This service ensures stateless authentication and provides utilities for
+ * claim extraction.
+ */
 @Service
 public class JwtService {
 
@@ -40,16 +47,32 @@ public class JwtService {
         this.redisService = redisService;
     }
 
+    /**
+     * Generates a signed JWT access token for a given user.
+     * Claims included: subject (ID), email, role, and email verification status.
+     * 
+     * @param user The authenticated user entity.
+     * @return A signed JWT string.
+     */
     public String generateAccessToken(User user) {
         return JWT.create()
                 .withSubject(user.getId().toString())
                 .withClaim("user_email", user.getEmail())
                 .withClaim("role", user.getSystemRole().name())
+                .withClaim("email_verified", user.isEmailVerified())
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .sign(Algorithm.HMAC256(secret));
     }
 
+    /**
+     * Creates and persists a new refresh token for the user.
+     * Any existing refresh tokens for the user are invalidated before creating a
+     * new one.
+     * 
+     * @param user The target user for the refresh token.
+     * @return The newly created and persisted RefreshToken entity.
+     */
     @Transactional
     public RefreshToken createRefreshToken(User user) {
         /**
@@ -94,6 +117,11 @@ public class JwtService {
         return jwt != null ? jwt.getClaim("role").asString() : null;
     }
 
+    public boolean getEmailVerifiedFromToken(String token) {
+        DecodedJWT jwt = validateToken(token);
+        return jwt != null ? jwt.getClaim("email_verified").asBoolean() : false;
+    }
+
     public RefreshToken verifyRefreshTokenExpiration(RefreshToken token) {
         if (token.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(token);
@@ -107,6 +135,13 @@ public class JwtService {
         refreshTokenRepository.deleteByUser(user);
     }
 
+    /**
+     * Adds an active access token to the Redis blacklist.
+     * The token will remain in the blacklist until its original expiration time.
+     * This is used during logout to prevent further use of the token.
+     * 
+     * @param token The JWT access token to blacklist.
+     */
     public void addToBlackList(String token) {
         String key = "auth:tokens:blacklist:" + token;
 
@@ -138,6 +173,19 @@ public class JwtService {
                 key,
                 true,
                 ttl);
+    }
+
+    /**
+     * Revokes all access for a user by invalidating their refresh token and
+     * blacklisting the provided access token.
+     * 
+     * @param user        The user whose access is being revoked.
+     * @param accessToken The current access token to be blacklisted.
+     */
+    public void removeTokenAccess(User user, String accessToken) {
+        String pureToken = accessToken.startsWith("Bearer ") ? accessToken.substring(7) : accessToken;
+        this.deleteRefreshTokenByUser(user);
+        this.addToBlackList(pureToken);
     }
 
     public boolean isTokenBlacklisted(String token) {

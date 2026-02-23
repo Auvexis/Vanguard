@@ -9,7 +9,20 @@
       "vmArgs": "-Dspring.profiles.active=dev",
       "preLaunchTask": "maven-compile",
       "env": {
-        "SPRING_PROFILES_ACTIVE": "dev"
+        "SPRING_PROFILES_ACTIVE": "dev",
+        "VANGUARD_CLIENT_URL": "http://localhost:3000",
+        "VANGUARD_DB_HOST": "localhost",
+        "VANGUARD_DB_PORT": "5432",
+        "VANGUARD_DB_NAME": "dev",
+        "VANGUARD_DB_USERNAME": "dev",
+        "VANGUARD_DB_PASSWORD": "dev",
+        "VANGUARD_REDIS_HOST": "localhost",
+        "VANGUARD_REDIS_PORT": "6379",
+        "VANGUARD_JWT_SECRET": "9YqjT7DE2yuRTgl0AOwzM6mWeHDwLRu/MJvMJNcqDRU=",
+        "VANGUARD_JWT_EXPIRATION_MS": "900000",
+        "VANGUARD_JWT_REFRESH_EXPIRATION_MS": "604800000",
+        "VANGUARD_SMTP_USERNAME": "[EMAIL_ADDRESS]",
+        "VANGUARD_SMTP_PASSWORD": "[APP_PASSWORD]"
       }
     },
     {
@@ -20,7 +33,20 @@
       "vmArgs": "-Dspring.profiles.active=prod",
       "preLaunchTask": "maven-compile",
       "env": {
-        "SPRING_PROFILES_ACTIVE": "prod"
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "VANGUARD_CLIENT_URL": "https://vanguard.auvexis.com",
+        "VANGUARD_DB_HOST": "postgres",
+        "VANGUARD_DB_PORT": "5432",
+        "VANGUARD_DB_NAME": "prod",
+        "VANGUARD_DB_USERNAME": "userprod",
+        "VANGUARD_DB_PASSWORD": "passwordprod",
+        "VANGUARD_REDIS_HOST": "redis",
+        "VANGUARD_REDIS_PORT": "6379",
+        "VANGUARD_JWT_SECRET": "hc4EFMzOX/RsmJuQqRSZoSbGGpZ1kDlJ9vdtwiyGWdA=",
+        "VANGUARD_JWT_EXPIRATION_MS": "900000",
+        "VANGUARD_JWT_REFRESH_EXPIRATION_MS": "604800000",
+        "VANGUARD_SMTP_USERNAME": "[EMAIL_ADDRESS]",
+        "VANGUARD_SMTP_PASSWORD": "[APP_PASSWORD]"
       }
     }
   ]

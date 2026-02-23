@@ -4,5 +4,5 @@ public enum SystemRole {
     SYSTEM_ADMIN,
     SUPPORT,
     AUDITOR,
-    NONE
+    USER
 }

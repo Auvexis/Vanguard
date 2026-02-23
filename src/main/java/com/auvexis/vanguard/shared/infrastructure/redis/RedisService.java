@@ -1,4 +1,4 @@
-package com.auvexis.vanguard.shared.modules.redis;
+package com.auvexis.vanguard.shared.infrastructure.redis;
 
 import java.time.Duration;
 
@@ -6,6 +6,12 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
+/**
+ * Low-level utility service for Redis operations.
+ * Provides a simplified interface for common key-value operations using
+ * RedisTemplate.
+ * Used primarily for token blacklisting and temporary data caching.
+ */
 @Service
 public class RedisService {
 

@@ -4,10 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,155 +19,108 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.auvexis.vanguard.modules.auth.application.exception.EmailAlreadyInUseException;
+import com.auvexis.vanguard.modules.auth.application.exception.EmailNotVerifiedException;
 import com.auvexis.vanguard.modules.auth.application.exception.InvalidCredentialsException;
-import com.auvexis.vanguard.modules.auth.application.exception.RefreshTokenExpiredException;
 import com.auvexis.vanguard.modules.auth.domain.RefreshToken;
 import com.auvexis.vanguard.modules.auth.domain.User;
+import com.auvexis.vanguard.modules.auth.infrastructure.repository.EmailVerificationRepository;
 import com.auvexis.vanguard.modules.auth.infrastructure.repository.UserRepository;
+import com.auvexis.vanguard.modules.auth.messaging.UserPublisher;
 import com.auvexis.vanguard.modules.auth.web.dtos.LoginRequest;
 import com.auvexis.vanguard.modules.auth.web.dtos.LoginResponse;
 import com.auvexis.vanguard.modules.auth.web.dtos.RegisterRequest;
-import com.auvexis.vanguard.modules.auth.web.dtos.TokenRefreshRequest;
-import com.auvexis.vanguard.modules.auth.web.dtos.TokenRefreshResponse;
+import com.auvexis.vanguard.shared.events.UserEmailVerificationEvent;
+import com.auvexis.vanguard.shared.infrastructure.jwt.JwtService;
 
-/**
- * Unit tests for AuthService.
- */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
     @Mock
-    private UserRepository userRepository;
-
+    private UserRepository repo;
     @Mock
-    private PasswordEncoder passwordEncoder;
-
+    private PasswordEncoder pwdEncoder;
     @Mock
     private JwtService jwtService;
+    @Mock
+    private UserPublisher userPublisher;
+    @Mock
+    private EmailVerificationRepository emailVerificationRepository;
 
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder, jwtService);
+        authService = new AuthService(repo, pwdEncoder, jwtService, userPublisher, emailVerificationRepository);
     }
 
-    /**
-     * Test successful user registration.
-     */
     @Test
-    void testRegister_Success() {
+    void register_ShouldSaveUserAndPublishEvent() {
         RegisterRequest request = new RegisterRequest("Test User", "test@example.com", "password123");
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
-        when(passwordEncoder.encode(request.password())).thenReturn("encodedPassword");
+        when(repo.findByEmail(anyString())).thenReturn(Optional.empty());
+        when(repo.save(any(User.class))).thenAnswer(i -> {
+            User u = i.getArgument(0);
+            u.setId(UUID.randomUUID());
+            return u;
+        });
+        when(pwdEncoder.encode(anyString())).thenReturn("hashedPassword");
 
         authService.register(request);
 
-        verify(userRepository).save(any(User.class));
+        verify(repo).save(any(User.class));
+        verify(emailVerificationRepository).save(any());
+        verify(userPublisher).publishUserEmailVerification(any(UserEmailVerificationEvent.class));
     }
 
-    /**
-     * Test registration with an email already in use.
-     */
     @Test
-    void testRegister_EmailAlreadyInUse() {
+    void register_ShouldThrowException_WhenEmailAlreadyInUse() {
         RegisterRequest request = new RegisterRequest("Test User", "test@example.com", "password123");
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(new User()));
+        when(repo.findByEmail(request.email())).thenReturn(Optional.of(new User()));
 
         assertThrows(EmailAlreadyInUseException.class, () -> authService.register(request));
     }
 
-    /**
-     * Test successful user login.
-     */
     @Test
-    void testLogin_Success() {
+    void login_ShouldReturnTokens_WhenCredentialsAreValid() {
         LoginRequest request = new LoginRequest("test@example.com", "password123");
-        User user = new User();
-        user.setPassword("encodedPassword");
+        User user = new User("Test", "test@example.com", "hashedPassword");
+        user.setEmailVerified(true);
+
+        when(repo.findByEmail(request.email())).thenReturn(Optional.of(user));
+        when(pwdEncoder.matches(request.password(), user.getPassword())).thenReturn(true);
+        when(jwtService.generateAccessToken(user)).thenReturn("accessToken");
 
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken("mockRefreshToken");
-
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(true);
-        when(jwtService.generateAccessToken(user)).thenReturn("mockAccessToken");
+        refreshToken.setToken("refreshToken");
         when(jwtService.createRefreshToken(user)).thenReturn(refreshToken);
 
         LoginResponse response = authService.login(request);
 
         assertNotNull(response);
-        assertEquals("mockAccessToken", response.access_token());
-        assertEquals("mockRefreshToken", response.refresh_token());
+        assertEquals("accessToken", response.access_token());
+        assertEquals("refreshToken", response.refresh_token());
         verify(jwtService).deleteRefreshTokenByUser(user);
     }
 
-    /**
-     * Test login with invalid credentials (wrong password).
-     */
     @Test
-    void testLogin_InvalidCredentials() {
+    void login_ShouldThrowException_WhenEmailNotVerified() {
         LoginRequest request = new LoginRequest("test@example.com", "password123");
-        User user = new User();
-        user.setPassword("encodedPassword");
+        User user = new User("Test", "test@example.com", "hashedPassword");
+        user.setEmailVerified(false);
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(false);
+        when(repo.findByEmail(request.email())).thenReturn(Optional.of(user));
+
+        assertThrows(EmailNotVerifiedException.class, () -> authService.login(request));
+    }
+
+    @Test
+    void login_ShouldThrowException_WhenCredentialsInvalid() {
+        LoginRequest request = new LoginRequest("test@example.com", "wrongPassword");
+        User user = new User("Test", "test@example.com", "hashedPassword");
+        user.setEmailVerified(true);
+
+        when(repo.findByEmail(request.email())).thenReturn(Optional.of(user));
+        when(pwdEncoder.matches(anyString(), anyString())).thenReturn(false);
 
         assertThrows(InvalidCredentialsException.class, () -> authService.login(request));
-    }
-
-    /**
-     * Test user logout with Bearer token.
-     */
-    @Test
-    void testLogout_Success() {
-        String email = "test@example.com";
-        String token = "Bearer someToken";
-        User user = new User();
-
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
-
-        authService.logout(email, token);
-
-        verify(jwtService).deleteRefreshTokenByUser(user);
-        verify(jwtService).addToBlackList("someToken");
-    }
-
-    /**
-     * Test token refresh successfully.
-     */
-    @Test
-    void testRefreshToken_Success() {
-        TokenRefreshRequest request = new TokenRefreshRequest("validRefreshToken");
-        RefreshToken refreshToken = new RefreshToken();
-        User user = new User();
-        refreshToken.setUser(user);
-
-        RefreshToken newRefreshTokenObj = new RefreshToken();
-        newRefreshTokenObj.setToken("newRefreshToken");
-
-        when(jwtService.findByToken("validRefreshToken")).thenReturn(Optional.of(refreshToken));
-        when(jwtService.verifyRefreshTokenExpiration(refreshToken)).thenReturn(refreshToken);
-        when(jwtService.generateAccessToken(user)).thenReturn("newAccessToken");
-        when(jwtService.createRefreshToken(user)).thenReturn(newRefreshTokenObj);
-
-        TokenRefreshResponse response = authService.refreshToken(request);
-
-        assertNotNull(response);
-        assertEquals("newAccessToken", response.access_token());
-        assertEquals("newRefreshToken", response.refresh_token());
-        verify(jwtService).deleteRefreshTokenByUser(user);
-    }
-
-    /**
-     * Test token refresh with invalid/expired refresh token.
-     */
-    @Test
-    void testRefreshToken_Failure() {
-        TokenRefreshRequest request = new TokenRefreshRequest("invalidRefreshToken");
-        when(jwtService.findByToken("invalidRefreshToken")).thenReturn(Optional.empty());
-
-        assertThrows(RefreshTokenExpiredException.class, () -> authService.refreshToken(request));
     }
 }

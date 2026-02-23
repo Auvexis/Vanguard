@@ -10,3 +10,21 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+  cache:
+    type: redis
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${VANGUARD_SMTP_USERNAME}
+    password: ${VANGUARD_SMTP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+vanguard:
+  client:
+    url: ${VANGUARD_CLIENT_URL}
+  smtp:
+    username: ${VANGUARD_SMTP_USERNAME}

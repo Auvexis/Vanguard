@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     container_name: vanguard-postgres
     environment:
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev
-      POSTGRES_DB: dev
+      POSTGRES_USER: prod
+      POSTGRES_PASSWORD: prod
+      POSTGRES_DB: prod
     ports:
       - "5432:5432"
     volumes:
@@ -27,6 +27,22 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+
+  vanguard-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: vanguard-api
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
 
 volumes:
   postgres_data:

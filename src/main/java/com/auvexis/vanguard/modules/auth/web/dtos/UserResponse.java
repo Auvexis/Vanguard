@@ -11,6 +11,7 @@ public record UserResponse(
         String name,
         String email,
         SystemRole role,
+        boolean email_verified,
         Instant created_at,
         Instant updated_at) {
     public static UserResponse from(User user) {
@@ -19,6 +20,7 @@ public record UserResponse(
                 user.getName(),
                 user.getEmail(),
                 user.getSystemRole(),
+                user.isEmailVerified(),
                 user.getCreatedAt(),
                 user.getUpdatedAt());
     }

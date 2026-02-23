@@ -10,7 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.auvexis.vanguard.modules.auth.application.JwtService;
+import com.auvexis.vanguard.shared.infrastructure.jwt.JwtService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -37,9 +37,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            if (jwtService.isTokenBlacklisted(token)) {
-                filterChain.doFilter(request, response);
-                return;
+            try {
+                if (jwtService.isTokenBlacklisted(token)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+            } catch (Exception e) {
+                // Log and continue if Redis is down/fails (fail-open for blacklisting is safer
+                // for availability)
+                logger.error("Error checking token blacklist: " + e.getMessage());
             }
 
             String email = jwtService.getEmailFromToken(token);

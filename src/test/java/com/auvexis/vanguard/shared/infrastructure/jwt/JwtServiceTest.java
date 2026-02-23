@@ -1,4 +1,4 @@
-package com.auvexis.vanguard.modules.auth.application;
+package com.auvexis.vanguard.shared.infrastructure.jwt;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -28,7 +28,7 @@ import com.auvexis.vanguard.modules.auth.domain.RefreshToken;
 import com.auvexis.vanguard.modules.auth.domain.User;
 import com.auvexis.vanguard.modules.auth.domain.SystemRole;
 import com.auvexis.vanguard.modules.auth.infrastructure.repository.RefreshTokenRepository;
-import com.auvexis.vanguard.shared.modules.redis.RedisService;
+import com.auvexis.vanguard.shared.infrastructure.redis.RedisService;
 
 /**
  * Unit tests for JwtService.
@@ -61,6 +61,7 @@ class JwtServiceTest {
         user.setId(UUID.randomUUID());
         user.setEmail("test@example.com");
         user.setSystemRole(SystemRole.SYSTEM_ADMIN);
+        user.setEmailVerified(true);
     }
 
     /**
@@ -79,6 +80,7 @@ class JwtServiceTest {
         assertEquals(user.getId().toString(), decodedJWT.getSubject());
         assertEquals(user.getEmail(), decodedJWT.getClaim("user_email").asString());
         assertEquals(user.getSystemRole().name(), decodedJWT.getClaim("role").asString());
+        assertEquals(user.isEmailVerified(), decodedJWT.getClaim("email_verified").asBoolean());
     }
 
     /**
@@ -160,16 +162,24 @@ class JwtServiceTest {
     }
 
     /**
-     * Test checking if token is blacklisted.
+     * Test extracting email verification status from token.
      */
     @Test
-    void testIsTokenBlacklisted() {
-        String token = "someToken";
-        when(redisService.get("auth:tokens:blacklist:" + token)).thenReturn(true);
+    void testGetEmailVerifiedFromToken() {
+        String token = jwtService.generateAccessToken(user);
+        boolean emailVerified = jwtService.getEmailVerifiedFromToken(token);
+        assertTrue(emailVerified);
+    }
 
-        boolean result = jwtService.isTokenBlacklisted(token);
+    /**
+     * Test revoking token access (logout logic).
+     */
+    @Test
+    void testRemoveTokenAccess() {
+        String token = "Bearer dummyToken";
 
-        assertTrue(result);
-        verify(redisService).get("auth:tokens:blacklist:" + token);
+        jwtService.removeTokenAccess(user, token);
+
+        verify(refreshTokenRepository).deleteByUser(user);
     }
 }

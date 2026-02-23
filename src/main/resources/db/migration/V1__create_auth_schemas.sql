@@ -9,7 +9,9 @@ CREATE TABLE auth.users (
     password_hash VARCHAR(255) NOT NULL,
     account_active BOOLEAN NOT NULL DEFAULT TRUE,
     email_verified BOOLEAN NOT NULL DEFAULT FALSE,
-    system_role VARCHAR(30) NOT NULL DEFAULT 'NONE',
+    system_role VARCHAR(30) NOT NULL DEFAULT 'USER',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX idx_users_created_at ON auth.users (created_at);
