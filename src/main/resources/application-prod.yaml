@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${VANGUARD_DB_HOST}/${VANGUARD_DB_USER}&${VANGUARD_DB_PASSWORD}&sslmode=require&channelBinding=require
+    url: jdbc:postgresql://${VANGUARD_DB_HOST}/${VANGUARD_DB_NAME}?${VANGUARD_DB_USER}&${VANGUARD_DB_PASSWORD}&sslmode=require&channelBinding=require
     driver-class-name: org.postgresql.Driver
 
   cache:
