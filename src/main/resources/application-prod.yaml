@@ -1,9 +1,7 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${VANGUARD_DB_HOST}:${VANGUARD_DB_PORT}/${VANGUARD_DB_NAME}
+    url: jdbc:postgresql://${VANGUARD_DB_HOST}/${VANGUARD_DB_USER}&${VANGUARD_DB_PASSWORD}&sslmode=require&channelBinding=require
     driver-class-name: org.postgresql.Driver
-    username: ${VANGUARD_DB_USERNAME}
-    password: ${VANGUARD_DB_PASSWORD}
 
   cache:
     type: redis
