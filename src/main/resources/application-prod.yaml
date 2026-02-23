@@ -11,7 +11,7 @@ spring:
       url: ${VANGUARD_REDIS_URL}
 
   rabbitmq:
-    uri: ${VANGUARD_RABBITMQ_URL}
+    addresses: ${VANGUARD_RABBITMQ_URL}
 
   mail:
     host: smtp.gmail.com
