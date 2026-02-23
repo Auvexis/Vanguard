@@ -102,7 +102,15 @@ public class SecurityConfig {
          * Allow the configured client URL and localhost:3000 as a fallback/dev default
          */
         configuration
-                .setAllowedOrigins(Arrays.asList(clientUrl, "http://localhost:3000", "https://vanguard.auvexis.com"));
+                .setAllowedOrigins(
+                        Arrays.asList(
+                                "https://auvexis-vanguard.vercel.app",
+                                "http://auvexis-vanguard.vercel.app",
+                                "https://vanguard.auvexis.com",
+                                "http://vanguard.auvexis.com",
+                                "https://auvexis.com",
+                                "http://auvexis.com",
+                                "http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
