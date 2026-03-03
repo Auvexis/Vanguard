@@ -1,17 +1,26 @@
-<h1 align="center">Auvexis Vanguard</h1>
+<div align="center">
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen)](https://spring.io/projects/spring-boot)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-blue)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<img width="1401" height="200" alt="vanguard_banner" src="https://github.com/user-attachments/assets/2e233c5e-7d19-48f9-915e-904993c12f88" />
 
-Vanguard is a robust, production-ready authentication and identity management system built with Spring Boot 3. It was designed from the ground up to provide a secure, scalable, and event-driven foundation for modern web applications.
+<br>
+
+> <h3>Vanguard is a production-ready authentication platform that demonstrates secure JWT handling, refresh token rotation, adaptive rate limiting, and event-driven architecture using Spring Boot 3.</h3>
+
+🌐 Try Vanguard Live Demo: https://vanguard.auvexis.com
+<br><br>
+[🚀 Getting Started](#-getting-started) • 
+[🔌 API Reference](#-api-reference) • 
+[🔒 Security Features](#-security-features) • 
+[🏗 Architecture](#-architecture)
+
+</div>
 
 ## Technical Stack
 
 - **Framework**: Spring Boot 3.x (Java 17)
-- **Security**: Spring Security 6 with JWT
-- **Persistence**: PostgreSQL (SQL) & Redis (Cache/Rate Limiting)
-- **Messaging**: RabbitMQ (Async Email Processing)
+- **Security**: Spring Security 6
+- **Persistence**: PostgreSQL & Redis
+- **Messaging**: RabbitMQ
 - **Email**: Resend API
 - **Infrastructure**: Docker & Docker Compose
 
@@ -29,7 +38,7 @@ Vanguard follows a modular architecture, separating responsibilities into clear 
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Pre-requisites
 
 - Docker & Docker Compose
 - JDK 17 (for local builds)
@@ -40,7 +49,7 @@ Vanguard follows a modular architecture, separating responsibilities into clear 
 The application requires several environment variables. Copy the example file and fill in your credentials:
 
 ```bash
-cp docker/.env.example docker/.env
+cp .env.example .env.dev
 ```
 
 | Variable                 | Description                      | Default |
